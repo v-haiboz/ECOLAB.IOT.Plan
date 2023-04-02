@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Sql\SqlTableClearScheduleService.cs~RF22bc94.TMP" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Cosmos\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ECOLAB.IOT.Plan.Common\ECOLAB.IOT.Plan.Common.csproj" />
+    <ProjectReference Include="..\ECOLAB.IOT.Plan.Entity\ECOLAB.IOT.Plan.Entity.csproj" />
+    <ProjectReference Include="..\ECOLAB.IOT.Plan.Provider\ECOLAB.IOT.Plan.Provider.csproj" />
+    <ProjectReference Include="..\ECOLAB.IOT.Plan.Repository\ECOLAB.IOT.Plan.Repository.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,12 @@
+C:\GitHub\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Common\bin\Debug\net6.0\ECOLAB.IOT.Plan.Common.deps.json
+C:\GitHub\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Common\bin\Debug\net6.0\ECOLAB.IOT.Plan.Common.dll
+C:\GitHub\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Common\bin\Debug\net6.0\ECOLAB.IOT.Plan.Common.pdb
+C:\GitHub\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Common\obj\Debug\net6.0\ECOLAB.IOT.Plan.Common.csproj.AssemblyReference.cache
+C:\GitHub\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Common\obj\Debug\net6.0\ECOLAB.IOT.Plan.Common.GeneratedMSBuildEditorConfig.editorconfig
+C:\GitHub\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Common\obj\Debug\net6.0\ECOLAB.IOT.Plan.Common.AssemblyInfoInputs.cache
+C:\GitHub\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Common\obj\Debug\net6.0\ECOLAB.IOT.Plan.Common.AssemblyInfo.cs
+C:\GitHub\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Common\obj\Debug\net6.0\ECOLAB.IOT.Plan.Common.csproj.CoreCompileInputs.cache
+C:\GitHub\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Common\obj\Debug\net6.0\ECOLAB.IOT.Plan.Common.dll
+C:\GitHub\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Common\obj\Debug\net6.0\refint\ECOLAB.IOT.Plan.Common.dll
+C:\GitHub\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Common\obj\Debug\net6.0\ECOLAB.IOT.Plan.Common.pdb
+C:\GitHub\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Common\obj\Debug\net6.0\ref\ECOLAB.IOT.Plan.Common.dll

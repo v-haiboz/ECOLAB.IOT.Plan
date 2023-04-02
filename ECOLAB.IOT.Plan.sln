@@ -1,0 +1,61 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32901.215
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECOLAB.IOT.Plan", "ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.csproj", "{B519FCDB-6D0F-4DD9-849E-B5408D9D9F94}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECOLAB.IOT.Plan.Entity", "ECOLAB.IOT.Plan.Entity\ECOLAB.IOT.Plan.Entity.csproj", "{166DFADA-012E-4A94-99EC-A77FCA329316}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECOLAB.IOT.Plan.Repository", "ECOLAB.IOT.Plan.Repository\ECOLAB.IOT.Plan.Repository.csproj", "{06553A6E-A355-442D-BAE8-C294565F14B4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECOLAB.IOT.Plan.Common", "ECOLAB.IOT.Plan.Common\ECOLAB.IOT.Plan.Common.csproj", "{A46E7B53-9D0E-4C7C-804C-363EABB5AD53}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECOLAB.IOT.Plan.Service", "ECOLAB.IOT.Plan.Service\ECOLAB.IOT.Plan.Service.csproj", "{4C22B384-3F77-404B-8DBD-C1CF4BA31CBC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECOLAB.IOT.Plan.Provider", "ECOLAB.IOT.Plan.Provider\ECOLAB.IOT.Plan.Provider.csproj", "{97C8A8E1-D371-4A60-9611-CB15C7428796}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECOLAB.IOT.Plan.DB", "ECOLAB.IOT.Plan.DB\ECOLAB.IOT.Plan.DB.csproj", "{F493142D-6A8F-4925-9978-8F8223BFA3B6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B519FCDB-6D0F-4DD9-849E-B5408D9D9F94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B519FCDB-6D0F-4DD9-849E-B5408D9D9F94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B519FCDB-6D0F-4DD9-849E-B5408D9D9F94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B519FCDB-6D0F-4DD9-849E-B5408D9D9F94}.Release|Any CPU.Build.0 = Release|Any CPU
+		{166DFADA-012E-4A94-99EC-A77FCA329316}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{166DFADA-012E-4A94-99EC-A77FCA329316}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{166DFADA-012E-4A94-99EC-A77FCA329316}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{166DFADA-012E-4A94-99EC-A77FCA329316}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06553A6E-A355-442D-BAE8-C294565F14B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06553A6E-A355-442D-BAE8-C294565F14B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06553A6E-A355-442D-BAE8-C294565F14B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06553A6E-A355-442D-BAE8-C294565F14B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A46E7B53-9D0E-4C7C-804C-363EABB5AD53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A46E7B53-9D0E-4C7C-804C-363EABB5AD53}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A46E7B53-9D0E-4C7C-804C-363EABB5AD53}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A46E7B53-9D0E-4C7C-804C-363EABB5AD53}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C22B384-3F77-404B-8DBD-C1CF4BA31CBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C22B384-3F77-404B-8DBD-C1CF4BA31CBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C22B384-3F77-404B-8DBD-C1CF4BA31CBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C22B384-3F77-404B-8DBD-C1CF4BA31CBC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97C8A8E1-D371-4A60-9611-CB15C7428796}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97C8A8E1-D371-4A60-9611-CB15C7428796}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97C8A8E1-D371-4A60-9611-CB15C7428796}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97C8A8E1-D371-4A60-9611-CB15C7428796}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F493142D-6A8F-4925-9978-8F8223BFA3B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F493142D-6A8F-4925-9978-8F8223BFA3B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F493142D-6A8F-4925-9978-8F8223BFA3B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F493142D-6A8F-4925-9978-8F8223BFA3B6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {198A3814-2DFF-4A0B-BAC6-DDE0EF9C0552}
+	EndGlobalSection
+EndGlobal

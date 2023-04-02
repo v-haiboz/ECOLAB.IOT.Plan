@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "ECOLAB.IOT.Plan": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7017",
+      "launchBrowser": false
+    }
+  }
+}

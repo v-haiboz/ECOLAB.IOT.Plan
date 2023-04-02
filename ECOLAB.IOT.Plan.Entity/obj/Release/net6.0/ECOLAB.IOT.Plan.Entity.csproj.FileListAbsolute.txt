@@ -1,0 +1,15 @@
+C:\EcoCode\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Entity\bin\Release\net6.0\ECOLAB.IOT.Plan.Entity.deps.json
+C:\EcoCode\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Entity\bin\Release\net6.0\ECOLAB.IOT.Plan.Entity.dll
+C:\EcoCode\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Entity\bin\Release\net6.0\ECOLAB.IOT.Plan.Entity.pdb
+C:\EcoCode\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Entity\bin\Release\net6.0\ECOLAB.IOT.Plan.Common.dll
+C:\EcoCode\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Entity\bin\Release\net6.0\ECOLAB.IOT.Plan.Common.pdb
+C:\EcoCode\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Entity\obj\Release\net6.0\ECOLAB.IOT.Plan.Entity.csproj.AssemblyReference.cache
+C:\EcoCode\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Entity\obj\Release\net6.0\ECOLAB.IOT.Plan.Entity.GeneratedMSBuildEditorConfig.editorconfig
+C:\EcoCode\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Entity\obj\Release\net6.0\ECOLAB.IOT.Plan.Entity.AssemblyInfoInputs.cache
+C:\EcoCode\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Entity\obj\Release\net6.0\ECOLAB.IOT.Plan.Entity.AssemblyInfo.cs
+C:\EcoCode\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Entity\obj\Release\net6.0\ECOLAB.IOT.Plan.Entity.csproj.CoreCompileInputs.cache
+C:\EcoCode\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Entity\obj\Release\net6.0\ECOLAB.IOT.Plan.Entity.csproj.CopyComplete
+C:\EcoCode\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Entity\obj\Release\net6.0\ECOLAB.IOT.Plan.Entity.dll
+C:\EcoCode\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Entity\obj\Release\net6.0\refint\ECOLAB.IOT.Plan.Entity.dll
+C:\EcoCode\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Entity\obj\Release\net6.0\ECOLAB.IOT.Plan.Entity.pdb
+C:\EcoCode\ECOLAB.IOT.Plan\ECOLAB.IOT.Plan.Entity\obj\Release\net6.0\ref\ECOLAB.IOT.Plan.Entity.dll

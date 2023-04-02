@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Cosmos\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ECOLAB.IOT.Plan.Common\ECOLAB.IOT.Plan.Common.csproj" />
+    <ProjectReference Include="..\ECOLAB.IOT.Plan.Entity\ECOLAB.IOT.Plan.Entity.csproj" />
+    <ProjectReference Include="..\ECOLAB.IOT.Plan.Repository\ECOLAB.IOT.Plan.Repository.csproj" />
+    <ProjectReference Include="..\ECOLAB.IOT.Plan.Service\ECOLAB.IOT.Plan.Service.csproj" />
+  </ItemGroup>
+
+</Project>
