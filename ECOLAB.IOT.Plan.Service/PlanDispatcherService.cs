@@ -1,5 +1,7 @@
 ﻿namespace ECOLAB.IOT.Plan.Service
 {
+    using ECOLAB.IOT.Plan.Common.Utilities;
+    using ECOLAB.IOT.Plan.Entity;
     using ECOLAB.IOT.Plan.Entity.ScheduleDtos;
     using ECOLAB.IOT.Plan.Entity.ScheduleDtos.SqlServer;
     using ECOLAB.IOT.Plan.Repository.Repositories.SqlServer;
@@ -52,22 +54,26 @@
                             return;
                         }
 
-                        var plans = clearPlan.GetPlans();
+                        var plans = clearPlan.GetPlans(); 
                         var connectionStr = plans.Key;
                         foreach (var sqlPlan in plans.Value)
                         {
-                            if (!_eLinkServerDBMappingTableRepository.IsFinish(clearPlan.ClearServer.ServerName, clearPlan.ClearServer.DBName, sqlPlan.TableName))
+                            var table=clearPlan.ClearTables.Where(item=>item.TableName==sqlPlan.TableName).FirstOrDefault();
+                            if (table!=null 
+                            && (table.ClearScheduleType== ClearScheduleType.PartialMatchDateTimeMetrics || table.ClearScheduleType == ClearScheduleType.CustomDateTimeMetrics|| table.ClearScheduleType == ClearScheduleType.DynamicDateTimeMetrics)
+                            && !_eLinkServerDBMappingTableRepository.IsFinish(clearPlan.ClearServer.ServerName, clearPlan.ClearServer.DBName, sqlPlan.TableName))
                             {
                                 _eLinkPlanHistoryService.WriteInfoMessage(new ELinkPlanHistoryDto()
                                 {
                                     Category = ELinkPlanHistoryCategory.ExecuteClearPlan,
                                     Message = $"Did {clearPlan.ClearServer.ServerName}:{clearPlan.ClearServer.DBName}:{sqlPlan.TableName} complete the first backup?",
-                                    TargetRowData = JsonConvert.SerializeObject(sqlPlan),
-                                    SourceRowData = JsonConvert.SerializeObject(clearPlan),
+                                    TargetRowData = JsonConvert.SerializeObject(Utility.JsonReplace(sqlPlan, "Password", "******")),
+                                    SourceRowData = JsonConvert.SerializeObject(Utility.JsonReplace(clearPlan, "Password", "******")),
                                 });
 
                                 continue;
                             }
+
                             stopWatch.Restart();
                             var result=_planService.ExecutePlan(sqlPlan, connectionStr, expiryTime);
                             stopWatch.Stop();
@@ -75,8 +81,8 @@
                             {
                                 Category = ELinkPlanHistoryCategory.ExecuteClearPlan,
                                 Message =  result.Tag==1? $"Execute {sqlPlan.TableName} successful trace Guid:{traceGuid}. {result.Description} Execution time:{stopWatch.Elapsed} Execution Sql:{ sqlPlan.Sql}": $"Execute {sqlPlan.TableName} failed trace Guid:{traceGuid}.{result.Description} Execution time:{stopWatch.Elapsed} Execution Sql:{sqlPlan.Sql}",
-                                TargetRowData = JsonConvert.SerializeObject(sqlPlan),
-                                SourceRowData = JsonConvert.SerializeObject(clearPlan),
+                                TargetRowData = JsonConvert.SerializeObject(Utility.JsonReplace(sqlPlan, "Password", "******")),
+                                SourceRowData = JsonConvert.SerializeObject(Utility.JsonReplace(clearPlan, "Password", "******")),
                             };
 
                             _eLinkPlanHistoryService.WriteInfoMessage(traceLog);
@@ -89,7 +95,7 @@
                         {
                             Category = ELinkPlanHistoryCategory.ExecuteClearPlan,
                             Message = $"trace Guid:{traceGuid}.{ex.Message}",
-                            SourceRowData = JsonConvert.SerializeObject(clearPlan),
+                            SourceRowData = JsonConvert.SerializeObject(Utility.JsonReplace(clearPlan, "Password", "******")),
                         };
 
                         _eLinkPlanHistoryService.WriteErrorMessage(traceLog);

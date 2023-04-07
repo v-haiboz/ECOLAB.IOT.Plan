@@ -81,7 +81,7 @@
                             Frequency = policyDto.Frequency,
                             Count = policyDto.Count
                         },
-                        ClearScheduleType = ClearScheduleType.PartialMatchDateTimMetrics,
+                        ClearScheduleType = ClearScheduleType.PartialMatchDateTimeMetrics,
                         ELinkSqlServer = eLinkSqlServer,
                         TableNamePattern = policyDto.TableName,
                         SourcePolicyMetrics = JsonConvert.SerializeObject(policyDto),

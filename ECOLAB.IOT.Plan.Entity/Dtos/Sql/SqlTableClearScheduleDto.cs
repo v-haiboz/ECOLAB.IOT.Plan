@@ -76,7 +76,7 @@
             }
             else if (tableName.Length > 1 && tableName.IndexOf("*") != -1 && tableName.EndsWith("*") && tableName.Split(new string[] { "*" }, StringSplitOptions.RemoveEmptyEntries).Length == 1)
             {
-                return isDateTimeMetrics?ClearScheduleType.PartialMatchDateTimMetrics: ClearScheduleType.PartialMatchIntMetrics;
+                return isDateTimeMetrics?ClearScheduleType.PartialMatchDateTimeMetrics: ClearScheduleType.PartialMatchIntMetrics;
             }
             else
             {

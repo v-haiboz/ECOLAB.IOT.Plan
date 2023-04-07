@@ -36,7 +36,7 @@
 
             var obj = eLinkPlanHistoryDto.ToCovertELinkPlanHistory();
             obj.Type = ELinkPlanHistoryType.Error.ToString();
-            obj = Utility.JsonReplace(obj, "Password", "******");
+           
             var bl= _eLinkPlanHistoryRepository.Insert(obj);
             result.Tag = bl ? 1 : 0;
 
@@ -55,7 +55,7 @@
 
             var obj = eLinkPlanHistoryDto.ToCovertELinkPlanHistory();
             obj.Type = ELinkPlanHistoryType.Info.ToString();
-            obj = Utility.JsonReplace(obj, "Password", "******");
+            
             var bl = _eLinkPlanHistoryRepository.Insert(obj);
             result.Tag = bl ? 1 : 0;
 
@@ -74,7 +74,7 @@
 
             var obj = eLinkPlanHistoryDto.ToCovertELinkPlanHistory();
             obj.Type = ELinkPlanHistoryType.Warning.ToString();
-            obj = Utility.JsonReplace(obj, "Password", "******");
+           
             var bl = _eLinkPlanHistoryRepository.Insert(obj);
             result.Tag = bl ? 1 : 0;
 

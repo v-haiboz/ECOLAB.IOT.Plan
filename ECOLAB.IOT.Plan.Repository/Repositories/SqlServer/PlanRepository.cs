@@ -7,7 +7,7 @@
 
     public interface IPlanRepository
     {
-        public bool IsExistColumn(string? pTableName, string colName, string connectionStr, string columnTypeName = "datetime2");
+        public bool IsExistColumn(string? pTableName, string colName, string connectionStr, string columnTypeName = "datetime2,datetime");
 
         public bool IsExistTable(string? pTableName, string pDB_NAME, string connectionStr);
 

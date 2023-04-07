@@ -1,7 +1,9 @@
 ﻿namespace ECOLAB.IOT.Plan.Service.Sql
 {
+    using ECOLAB.IOT.Plan.Common.Utilities;
     using ECOLAB.IOT.Plan.Entity;
     using ECOLAB.IOT.Plan.Entity.Dtos.Sql;
+    using ECOLAB.IOT.Plan.Entity.Entities.SqlServer;
     using ECOLAB.IOT.Plan.Entity.ScheduleDtos;
     using ECOLAB.IOT.Plan.Entity.ScheduleDtos.SqlServer;
     using ECOLAB.IOT.Plan.Entity.SqlServer;
@@ -14,7 +16,7 @@
     public interface ISqlPlanParserService
     {
         public Task<List<ClearPlan>> Execute();
-        public Task<ClearPlan> BuildClearPlan(ELinkSqlServer eLINKSql);
+        public Task<ClearPlan> BuildClearPlan(ELinkSqlServer eLINKSql, bool isBuildDBMappingTable = true);
         public Task<List<ClearPlan>> BuildClearPlans(List<ELinkSqlServer> eLinkSqlServers);
 
     }
@@ -25,16 +27,22 @@
         private readonly Func<string, IPolicyProvider<ClearTable, PolicyDto<IntMetricsDto>>> _policyIntMetricsProviders;
         private readonly IELinkSqlServerRepository _eLINKSqlServerRepository;
         private readonly IELinkPlanHistoryService _eLinkPlanHistoryService;
+        private readonly IELinkServerDBMappingTableRepository _eLinkServerDBMappingTableRepository;
+        private readonly IPlanRepository _planRepository;
 
         public SqlPlanParserService(Func<string, IPolicyProvider<ClearTable, PolicyDto<DateTimeMetricsDto>>> policyDateTimeMetricsProviders,
             Func<string, IPolicyProvider<ClearTable, PolicyDto<IntMetricsDto>>> policyIntMetricsProviders,
             IELinkSqlServerRepository eLINKSqlServerRepository,
-            IELinkPlanHistoryService eLinkPlanHistoryService)
+            IELinkPlanHistoryService eLinkPlanHistoryService,
+            IELinkServerDBMappingTableRepository eLinkServerDBMappingTableRepository,
+            IPlanRepository planRepository)
         {
             _policyDateTimeMetricsProviders = policyDateTimeMetricsProviders;
             _policyIntMetricsProviders = policyIntMetricsProviders;
             _eLINKSqlServerRepository = eLINKSqlServerRepository;
             _eLinkPlanHistoryService = eLinkPlanHistoryService;
+            _eLinkServerDBMappingTableRepository = eLinkServerDBMappingTableRepository;
+            _planRepository = planRepository;
         }
 
         public async Task<List<ClearPlan>> Execute()
@@ -53,8 +61,8 @@
                         {
                             Category= ELinkPlanHistoryCategory.BuildClearPlan,
                             Message = "Build ClearPlan Successful",
-                            TargetRowData = JsonConvert.SerializeObject(clearPlan),
-                            SourceRowData = JsonConvert.SerializeObject(item),
+                            TargetRowData = JsonConvert.SerializeObject(Utility.JsonReplace(clearPlan, "Password", "******")),
+                            SourceRowData = JsonConvert.SerializeObject(Utility.JsonReplace(item, "Password", "******")),
                         };
                         _eLinkPlanHistoryService.WriteInfoMessage(traceLog);
                     }
@@ -65,7 +73,7 @@
                     {
                         Category = ELinkPlanHistoryCategory.BuildClearPlan,
                         Message = ex.Message,
-                        SourceRowData = JsonConvert.SerializeObject(item),
+                        SourceRowData = JsonConvert.SerializeObject(Utility.JsonReplace(item, "Password", "******")),
                     };
 
                     _eLinkPlanHistoryService.WriteErrorMessage(traceLog);
@@ -92,7 +100,7 @@
             return list;
         }
 
-        public async Task<ClearPlan> BuildClearPlan(ELinkSqlServer eLINKSql)
+        public async Task<ClearPlan> BuildClearPlan(ELinkSqlServer eLINKSql, bool isBuildDBMappingTable=true)
         {
             var clearPlan = new ClearPlan();
             clearPlan.ClearServer = new ClearServer()
@@ -125,7 +133,7 @@
                         }
 
                         break;
-                    case ClearScheduleType.PartialMatchDateTimMetrics:
+                    case ClearScheduleType.PartialMatchDateTimeMetrics:
                         {
                             var instance = JsonConvert.DeserializeObject<PolicyDto<DateTimeMetricsDto>>(item.JObject);
                             var clearTables = await _policyDateTimeMetricsProviders("PartialMatch").Resolve(instance, eLINKSql, clearPlan.ClearServer);
@@ -160,7 +168,75 @@
                 }
             }
 
+            if (isBuildDBMappingTable)
+            {
+                DynamicAddServerDBMappingTable(clearPlan);
+            }
+            
+
             return await Task.FromResult(clearPlan);
+        }
+
+        private void DynamicAddServerDBMappingTable(ClearPlan clearPlan)
+        {
+
+            if (clearPlan == null || clearPlan.ClearServer==null || clearPlan.ClearTables == null)
+            {
+                return;
+            }
+
+            var eLinkServerDBMappingTables_Insert =new List<ELinkServerDBMappingTable>();
+            var eLinkServerDBMappingTables_Update = new List<ELinkServerDBMappingTable>();
+            foreach (var table in clearPlan.ClearTables)
+            {
+                if ((table.ClearScheduleType==ClearScheduleType.DynamicDateTimeMetrics 
+                    || table.ClearScheduleType==ClearScheduleType.PartialMatchDateTimeMetrics 
+                    || table.ClearScheduleType==ClearScheduleType.CustomDateTimeMetrics))
+                {
+                    var item = _eLinkServerDBMappingTableRepository.GetELinkServerDBMappingTable(clearPlan.ClearServer.ServerName, clearPlan.ClearServer.DBName, table.TableName);
+                    if (item == null)
+                    {
+                        eLinkServerDBMappingTables_Insert.Add(new ELinkServerDBMappingTable()
+                        {
+                            ServerName = clearPlan.ClearServer.ServerName,
+                            DBName = clearPlan.ClearServer.DBName,
+                            TableName = table.TableName,
+                            ColumnName = table.WhereMetrics.ColumnName,
+                            Status = 0,
+                            CreatedAt = DateTime.UtcNow
+                        });
+
+                        continue;
+                    }
+                    
+                    if(item.ColumnName!= table.WhereMetrics.ColumnName)
+                    {
+                        if (!_planRepository.IsExistColumn(table.TableName, item.ColumnName, clearPlan.ClearServer.ConnectionStr))
+                        {
+                            eLinkServerDBMappingTables_Update.Add(new ELinkServerDBMappingTable()
+                            {
+                                ServerName = clearPlan.ClearServer.ServerName,
+                                DBName = clearPlan.ClearServer.DBName,
+                                TableName = table.TableName,
+                                ColumnName = table.WhereMetrics.ColumnName,
+                                Status = 0,
+                                UpdatedAt = DateTime.UtcNow
+                            });
+                        }
+                    }
+                }
+            }
+
+            if (eLinkServerDBMappingTables_Insert.Count > 0)
+            {
+                _eLinkServerDBMappingTableRepository.BulkInsertSql(eLinkServerDBMappingTables_Insert);
+            }
+
+            if (eLinkServerDBMappingTables_Update.Count > 0)
+            {
+                _eLinkServerDBMappingTableRepository.BulkUpdateSql(eLinkServerDBMappingTables_Update);
+            }
+
         }
 
         private void RecordClearPlan(ClearPlan clearPlan, HashSet<ClearTable> clearTables)

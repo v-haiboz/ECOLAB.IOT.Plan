@@ -12,7 +12,12 @@
         public bool Insert(ELinkServerDBMappingTable eLinkServerDBMappingTable);
         public bool BulkInsertSql(List<ELinkServerDBMappingTable> eLinkServerDBMappingTables);
 
+        public bool BulkUpdateSql(List<ELinkServerDBMappingTable> eLinkServerDBMappingTables);
+
+
         public bool IsFinish(string serverName,string dbName, string tableName);
+
+        public ELinkServerDBMappingTable? GetELinkServerDBMappingTable(string serverName, string dbName, string tableName);
 
     }
 
@@ -56,6 +61,22 @@
             });
         }
 
+        public bool BulkUpdateSql(List<ELinkServerDBMappingTable> eLinkServerDBMappingTables)
+        {
+            return Execute((conn, transaction) =>
+            {
+                var updatedSql = @"Update ELinkServerDBMappingTable set ColumnName=@ColumnName,Status=@Status,UpdatedAt=@UpdatedAt where ServerName=@ServerName and DBName=@DBName and TableName=@TableName";
+
+                foreach (var item in eLinkServerDBMappingTables)
+                {
+                    conn.Execute(updatedSql, item, transaction: transaction);
+                }
+
+                transaction.Commit();
+                return true;
+            });
+        }
+
         public bool IsFinish(string serverName, string dbName, string tableName)
         {
             return Execute((conn) =>
@@ -68,6 +89,16 @@
                 }
 
                 return false;
+            });
+        }
+
+        public ELinkServerDBMappingTable? GetELinkServerDBMappingTable(string serverName, string dbName, string tableName)
+        {
+            return Execute((conn) =>
+            {
+                var sql = $"select * from ELinkServerDBMappingTable where ServerName='{serverName}' and DBName='{dbName}' and TableName='{tableName}'";
+                var item = conn.Query<ELinkServerDBMappingTable>(sql).FirstOrDefault();
+                return item;
             });
         }
     }

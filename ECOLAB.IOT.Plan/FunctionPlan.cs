@@ -14,6 +14,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
@@ -36,13 +37,15 @@ namespace ECOLAB.IOT.Plan
         private readonly ISqlPlanParserService _sqlPlanParserService;
         private readonly ISqlPlanDispatcherService _sqlPlanDispatcherService;
         private readonly IELinkPlanHistoryService _eLinkPlanHistoryService;
+        private IConfiguration _config;
         public Function1(IELinkSqlServerService eLINKSqlServerService, 
             IUserWhiteListService userWhiteListService, 
             ICertificationService certificationService,
             ISqlTableClearScheduleService sqlTableClearScheduleService,
             ISqlPlanParserService sqlPlanParserService,
             ISqlPlanDispatcherService sqlPlanDispatcherService,
-            IELinkPlanHistoryService eLinkPlanHistoryService)
+            IELinkPlanHistoryService eLinkPlanHistoryService,
+            IConfiguration config)
         {
             _eLINKSqlServerService = eLINKSqlServerService;
             _userWhiteListService = userWhiteListService;
@@ -51,13 +54,14 @@ namespace ECOLAB.IOT.Plan
             _sqlPlanParserService= sqlPlanParserService;
             _sqlPlanDispatcherService = sqlPlanDispatcherService;
             _eLinkPlanHistoryService= eLinkPlanHistoryService;
+            _config = config;
         }
 
         [FunctionName("ELINKSqlServerInsert")]
         [OpenApiSecurity("apikeyquery_auth",
                      SecuritySchemeType.ApiKey,
                      In = OpenApiSecurityLocationType.Header,
-                     Name = "token")]
+                     Name = "Authorization")]
         [OpenApiOperation(operationId: "ELINKSqlServer", tags: new[] { "ELINKSqlServer" }, Summary = "Insert Sql Server information.", Description = "Insert Sql Server information.", Visibility = OpenApiVisibilityType.Important)]
         [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(ELINKSqlServerDto), Description = "Feed reader request payload")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(TData), Summary = "result")]
@@ -65,8 +69,8 @@ namespace ECOLAB.IOT.Plan
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "ELINKSqlServer/Insert")] HttpRequest req,
             ILogger log)
         {
-            var headers = req.Headers["token"];
-            var result= _certificationService.ValidateToken(headers);
+            var headers = req.Headers["Authorization"];
+            var result= await _certificationService.ValidateAccessToken(headers);
             if (result.Tag == 0)
             {
                 return new UnauthorizedResult();
@@ -83,7 +87,7 @@ namespace ECOLAB.IOT.Plan
         [OpenApiSecurity("apikeyquery_auth",
                      SecuritySchemeType.ApiKey,
                      In = OpenApiSecurityLocationType.Header,
-                     Name = "token")]
+                     Name = "Authorization")]
         [OpenApiOperation(operationId: "ELINKSqlServer", tags: new[] { "ELINKSqlServer" }, Summary = "Update Sql Server information.", Description = "Update Sql Server information.", Visibility = OpenApiVisibilityType.Important)]
         [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(ELINKSqlServerDto), Description = "Feed reader request payload")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(TData), Summary = "result")]
@@ -91,8 +95,8 @@ namespace ECOLAB.IOT.Plan
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "ELINKSqlServer/Update")] HttpRequest req,
             ILogger log)
         {
-            var headers = req.Headers["token"];
-            var result = _certificationService.ValidateToken(headers);
+            var headers = req.Headers["Authorization"];
+            var result = await _certificationService.ValidateAccessToken(headers);
             if (result.Tag == 0)
             {
                 return new UnauthorizedResult();
@@ -110,7 +114,7 @@ namespace ECOLAB.IOT.Plan
         [OpenApiSecurity("apikeyquery_auth",
                      SecuritySchemeType.ApiKey,
                      In = OpenApiSecurityLocationType.Header,
-                     Name = "token")]
+                     Name = "Authorization")]
         [OpenApiOperation(operationId: "ELINKSqlServer", tags: new[] { "ELINKSqlServer" }, Summary = "Delete Sql Server information.", Description = "Delete Sql Server information.", Visibility = OpenApiVisibilityType.Important)]
         [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(ELINKSqlServerDeleteDto), Description = "Feed reader request payload")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(TData), Summary = "result")]
@@ -118,8 +122,8 @@ namespace ECOLAB.IOT.Plan
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "ELINKSqlServer/Delete")] HttpRequest req,
             ILogger log)
         {
-            var headers = req.Headers["token"];
-            var result = _certificationService.ValidateToken(headers);
+            var headers = req.Headers["Authorization"];
+            var result = await _certificationService.ValidateAccessToken(headers);
             if (result.Tag == 0)
             {
                 return new UnauthorizedResult();
@@ -134,7 +138,7 @@ namespace ECOLAB.IOT.Plan
         }
 
         [FunctionName("ELINKSqlServerGetList")]
-        [OpenApiSecurity("apikeyquery_auth",SecuritySchemeType.ApiKey,In = OpenApiSecurityLocationType.Header,Name = "token")]
+        [OpenApiSecurity("apikeyquery_auth",SecuritySchemeType.ApiKey,In = OpenApiSecurityLocationType.Header,Name = "Authorization")]
         [OpenApiOperation(operationId: "ELINKSqlServer", tags: new[] { "ELINKSqlServer" }, Summary = "ELINKSqlServer GetList information.", Description = "It only get information from Server and DB.", Visibility = OpenApiVisibilityType.Important)]
         [OpenApiParameter(name: "ServerName", In = ParameterLocation.Query, Required = false, Type = typeof(string), Description = "The ServerName parameter")]
         [OpenApiParameter(name: "DBName", In = ParameterLocation.Query, Required = false, Type = typeof(string), Description = "The DBName parameter")]
@@ -145,17 +149,17 @@ namespace ECOLAB.IOT.Plan
     [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "ELINKSqlServer/GetList")] HttpRequest req,
     ILogger log)
         {
-            var headers = req.Headers["token"];
-            var result = _certificationService.ValidateToken(headers);
-            if (result.Tag == 0)
-            {
-                return new UnauthorizedResult();
-                //return new OkObjectResult(HttpStatusCode.Unauthorized);
-            }
-
             var result_dynamic = new TDataPage<List<ELinkSqlServer>>();
             try
             {
+                var headers = req.Headers["Authorization"];
+                var result = await _certificationService.ValidateAccessToken(headers.ToString());
+                if (result.Tag == 0)
+                {
+                    return new UnauthorizedResult();
+                    //return new OkObjectResult(HttpStatusCode.Unauthorized);
+                }
+
                 string ServerName = req.Query["ServerName"];
                 string DBName = req.Query["DBName"];
                 if (!int.TryParse(req.Query["PageIndex"], out var pageIndex))
@@ -181,7 +185,7 @@ namespace ECOLAB.IOT.Plan
         }
 
         [FunctionName("ELINKSqlServerGetDetailList")]
-        [OpenApiSecurity("apikeyquery_auth",SecuritySchemeType.ApiKey,In = OpenApiSecurityLocationType.Header,Name = "token")]
+        [OpenApiSecurity("apikeyquery_auth",SecuritySchemeType.ApiKey,In = OpenApiSecurityLocationType.Header,Name = "Authorization")]
         [OpenApiOperation(operationId: "ELINKSqlServer", tags: new[] { "ELINKSqlServer" }, Summary = "ELINK SqlServer GetDetailList information.", Description = "It not only get information about Server and DB, but also get information about their corresponding tables.", Visibility = OpenApiVisibilityType.Important)]
         [OpenApiParameter(name: "ServerName", In = ParameterLocation.Query, Required = false, Type = typeof(string), Description = "The ServerName parameter")]
         [OpenApiParameter(name: "DBName", In = ParameterLocation.Query, Required = false, Type = typeof(string), Description = "The DBName parameter")]
@@ -192,8 +196,8 @@ namespace ECOLAB.IOT.Plan
 [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "ELINKSqlServer/GetDetailList")] HttpRequest req,
 ILogger log)
         {
-            var headers = req.Headers["token"];
-            var result = _certificationService.ValidateToken(headers);
+            var headers = req.Headers["Authorization"];
+            var result = await _certificationService.ValidateAccessToken(headers);
             if (result.Tag == 0)
             {
                 return new UnauthorizedResult();
@@ -238,7 +242,7 @@ ILogger log)
         [OpenApiSecurity("apikeyquery_auth",
                     SecuritySchemeType.ApiKey,
                     In = OpenApiSecurityLocationType.Header,
-                    Name = "token")]
+                    Name = "Authorization")]
         [OpenApiOperation(operationId: "SqlTableClearSchedule", tags: new[] { "SqlTableClearSchedule" }, Summary = "Insert SqlTableClearSchedule information.", Description = "Insert SqlTableClearSchedule information.", Visibility = OpenApiVisibilityType.Important)]
         [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(SqlTableClearScheduleDto<dynamic>), Description = "Feed reader request payload")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(TData), Summary = "result")]
@@ -246,8 +250,8 @@ ILogger log)
            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SqlTableClearSchedule/Insert")] HttpRequest req,
            ILogger log)
         {
-            var headers = req.Headers["token"];
-            var result = _certificationService.ValidateToken(headers);
+            var headers = req.Headers["Authorization"];
+            var result = await _certificationService.ValidateAccessToken(headers);
             if (result.Tag == 0)
             {
                 return new UnauthorizedResult();
@@ -264,7 +268,7 @@ ILogger log)
         [OpenApiSecurity("apikeyquery_auth",
                     SecuritySchemeType.ApiKey,
                     In = OpenApiSecurityLocationType.Header,
-                    Name = "token")]
+                    Name = "Authorization")]
         [OpenApiOperation(operationId: "SqlTableClearSchedule", tags: new[] { "SqlTableClearSchedule" }, Summary = "Update SqlTableClearSchedule information.", Description = "Update SqlTableClearSchedule information.", Visibility = OpenApiVisibilityType.Important)]
         [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(SqlTableClearScheduleDto<dynamic>), Description = "Feed reader request payload")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(TData), Summary = "result")]
@@ -272,8 +276,8 @@ ILogger log)
            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SqlTableClearSchedule/Update")] HttpRequest req,
            ILogger log)
         {
-            var headers = req.Headers["token"];
-            var result = _certificationService.ValidateToken(headers);
+            var headers = req.Headers["Authorization"];
+            var result = await _certificationService.ValidateAccessToken(headers);
             if (result.Tag == 0)
             {
                 return new UnauthorizedResult();
@@ -289,7 +293,7 @@ ILogger log)
         [OpenApiSecurity("apikeyquery_auth",
                     SecuritySchemeType.ApiKey,
                     In = OpenApiSecurityLocationType.Header,
-                    Name = "token")]
+                    Name = "Authorization")]
         [OpenApiOperation(operationId: "SqlTableClearSchedule", tags: new[] { "SqlTableClearSchedule" }, Summary = "Enable Or Disable SqlTableClearSchedule.", Description = "Enable Or Disable SqlTableClearSchedule.", Visibility = OpenApiVisibilityType.Important)]
         [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(SqlTableClearScheduleEnableOrDisableDto), Description = "Feed reader request payload")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(TData), Summary = "result")]
@@ -297,7 +301,7 @@ ILogger log)
            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SqlTableClearSchedule/EnableOrDisable")] HttpRequest req,
            ILogger log)
         {
-            var headers = req.Headers["token"];
+            var headers = req.Headers["Authorization"];
             var result = _certificationService.ValidateToken(headers);
             if (result.Tag == 0)
             {
@@ -318,7 +322,7 @@ ILogger log)
         [OpenApiSecurity("apikeyquery_auth",
                     SecuritySchemeType.ApiKey,
                     In = OpenApiSecurityLocationType.Header,
-                    Name = "token")]
+                    Name = "Authorization")]
         [OpenApiOperation(operationId: "SqlTableClearSchedule", tags: new[] { "SqlTableClearSchedule" }, Summary = "Insert Sql Server information.", Description = "Insert Sql Server information.", Visibility = OpenApiVisibilityType.Important)]
         [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(SqlTableClearScheduleDeleteDto), Description = "Feed reader request payload")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(TData), Summary = "result")]
@@ -326,8 +330,8 @@ ILogger log)
            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "SqlTableClearSchedule/Delete")] HttpRequest req,
            ILogger log)
         {
-            var headers = req.Headers["token"];
-            var result = _certificationService.ValidateToken(headers);
+            var headers = req.Headers["Authorization"];
+            var result = await _certificationService.ValidateAccessToken(headers);
             if (result.Tag == 0)
             {
                 return new UnauthorizedResult();
@@ -343,7 +347,7 @@ ILogger log)
 
 
         [FunctionName("GetTableClearSchedulesByServerNameOrDBName")]
-        [OpenApiSecurity("apikeyquery_auth",SecuritySchemeType.ApiKey,In = OpenApiSecurityLocationType.Header,Name = "token")]
+        [OpenApiSecurity("apikeyquery_auth",SecuritySchemeType.ApiKey,In = OpenApiSecurityLocationType.Header,Name = "Authorization")]
         [OpenApiOperation(operationId: "SqlTableClearSchedulesByServerNameOrDBName", tags: new[] { "SqlTableClearSchedule" }, Summary = "SqlTableClearSchedule.", Description = "SqlTableClearSchedule information.", Visibility = OpenApiVisibilityType.Important)]
         [OpenApiParameter(name: "ServerName", In = ParameterLocation.Query, Required = false, Type = typeof(string), Description = "The ServerName parameter")]
         [OpenApiParameter(name: "DBName", In = ParameterLocation.Query, Required = false, Type = typeof(string), Description = "The DBName parameter")]
@@ -354,8 +358,8 @@ ILogger log)
 [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "SqlTableClearSchedule/GetList")] HttpRequest req,
 ILogger log)
         {
-            var headers = req.Headers["token"];
-            var result = _certificationService.ValidateToken(headers);
+            var headers = req.Headers["Authorization"];
+            var result = await _certificationService.ValidateAccessToken(headers);
             if (result.Tag == 0)
             {
                 return new UnauthorizedResult();
@@ -397,175 +401,190 @@ ILogger log)
         }
 
 
-        [FunctionName("UserWhiteListCreate")]
-        [OpenApiSecurity("basic_auth",
-                     SecuritySchemeType.Http,
-                     Scheme = OpenApiSecuritySchemeType.Basic)]
-        [OpenApiOperation(operationId: "UserWhiteList", tags: new[] { "UserWhiteList" }, Summary = "Create User WhiteList information.", Description = "Delete Sql Server information.", Visibility = OpenApiVisibilityType.Important)]
-        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(UserWhiteListDto), Description = "Feed reader request payload")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(TData<SecretDto>), Summary = "result")]
-        public async Task<IActionResult> UserWhiteListInsert(
-          [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "UserWhiteList/Create")] HttpRequest req,
-          ILogger log)
-        {
-            var headers = req.Headers["Authorization"];
-            if (Utility.ValidateToken(headers))
-            {
-                string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-                var item = JsonConvert.DeserializeObject<UserWhiteListDto>(requestBody, Utility.setting);
-                var result = _userWhiteListService.Create(item);
-                return new OkObjectResult(result);
-            }
-            else
-            {
-                string encodedUsernamePassword = headers.ToString().Substring("Basic ".Length).Trim();
-                //Decoding Base64
-                Encoding encoding = Encoding.GetEncoding("iso-8859-1");
-                string usernamePassword = encoding.GetString(Convert.FromBase64String(encodedUsernamePassword));
-                //Splitting Username:Password
-                int seperatorIndex = usernamePassword.IndexOf(':');
-                // Extracting the individual username and password
-                var username = usernamePassword.Substring(0, seperatorIndex);
-                var password = usernamePassword.Substring(seperatorIndex + 1);
-                //Validating the credentials
-                return new OkObjectResult(new { usernamePassword, password });
-            }
-        }
+#region Custom Authorization Policy.
 
-        [FunctionName("UserWhiteListRefresh")]
-        [OpenApiSecurity("basic_auth",
-                     SecuritySchemeType.Http,
-                     Scheme = OpenApiSecuritySchemeType.Basic)]
-        [OpenApiOperation(operationId: "UserWhiteListRefresh", tags: new[] { "UserWhiteList" }, Summary = "Create User WhiteList information.", Description = "Delete Sql Server information.", Visibility = OpenApiVisibilityType.Important)]
-        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(UserWhiteListDto), Description = "Feed reader request payload")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(TData<SecretDto>), Summary = "result")]
-        public async Task<IActionResult> UserWhiteListRefresh(
-          [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "UserWhiteList/Refresh")] HttpRequest req,
-          ILogger log)
-        {
-            var headers = req.Headers["Authorization"];
-            if (Utility.ValidateToken(headers))
-            {
-                string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-                var item = JsonConvert.DeserializeObject<UserWhiteListDto>(requestBody, Utility.setting);
-                var result = _userWhiteListService.Refresh(item);
-                return new OkObjectResult(result);
-            }
-            else
-            {
-                return new UnauthorizedResult();
-            }
-        }
-
-        [FunctionName("UserWhiteListDelete")]
-        [OpenApiSecurity("basic_auth",
-                     SecuritySchemeType.Http,
-                     Scheme = OpenApiSecuritySchemeType.Basic)]
-        [OpenApiOperation(operationId: "UserWhiteList", tags: new[] { "UserWhiteList" }, Summary = "Delete User WhiteList information.", Description = "Delete User WhiteList information.", Visibility = OpenApiVisibilityType.Important)]
-        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(UserWhiteListDto), Description = "Feed reader request payload")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(TData), Summary = "result")]
-        public async Task<IActionResult> UserWhiteListDelete(
-           [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "UserWhiteList/Delete")] HttpRequest req,
-           ILogger log)
-        {
-            var headers = req.Headers["Authorization"];
-            if (Utility.ValidateToken(headers))
-            {
-                string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-                var item = JsonConvert.DeserializeObject<UserWhiteListDto>(requestBody, Utility.setting);
-                var result = _userWhiteListService.Delete(item);
-                return new OkObjectResult(result);
-            }
-            else
-            {
-                return new UnauthorizedResult();
-            }
-        }
-
-
-        [FunctionName("UserWhiteListGetListByEmail")]
+        //[FunctionName("UserWhiteListCreate")]
         //[OpenApiSecurity("basic_auth",
         //             SecuritySchemeType.Http,
         //             Scheme = OpenApiSecuritySchemeType.Basic)]
-        [OpenApiOperation(operationId: "UserWhiteList", tags: new[] { "UserWhiteList" }, Summary = "Get User WhiteList information.", Description = "Get User WhiteList information.", Visibility = OpenApiVisibilityType.Important)]
-        [OpenApiParameter(name: "Email", In = ParameterLocation.Query, Required = false, Type = typeof(string), Description = "The Email parameter")]
-        [OpenApiParameter(name: "PageIndex", In = ParameterLocation.Query, Required = false, Type = typeof(int), Description = "The PageIndex parameter")]
-        [OpenApiParameter(name: "PageSize", In = ParameterLocation.Query, Required = false, Type = typeof(int), Description = "The PageSize parameter")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(TDataPage<List<UserWhiteList>>), Summary = "result")]
-        public async Task<IActionResult> UserWhiteListGetListByEmail(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "UserWhiteList/GetListByEmail")] HttpRequest req,
-            ILogger log)
-        {
-            var result = new TDataPage<List<UserWhiteList>>(); 
-            var queryParameters = req.Query;
-            string email = null;
-            if (queryParameters.TryGetValue("Email", out var email_str))
-            {
-                email = email_str;
-            }
+        //[OpenApiOperation(operationId: "UserWhiteList", tags: new[] { "UserWhiteList" }, Summary = "Create User WhiteList information.", Description = "Delete Sql Server information.", Visibility = OpenApiVisibilityType.Important)]
+        //[OpenApiRequestBody(contentType: "application/json", bodyType: typeof(UserWhiteListDto), Description = "Feed reader request payload")]
+        //[OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(TData<SecretDto>), Summary = "result")]
+        //public async Task<IActionResult> UserWhiteListInsert(
+        //  [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "UserWhiteList/Create")] HttpRequest req,
+        //  ILogger log)
+        //{
+        //    var headers = req.Headers["Authorization"];
+        //    if (Utility.ValidateToken(headers))
+        //    {
+        //        string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+        //        var item = JsonConvert.DeserializeObject<UserWhiteListDto>(requestBody, Utility.setting);
+        //        var result = _userWhiteListService.Create(item);
+        //        return new OkObjectResult(result);
+        //    }
+        //    else
+        //    {
+        //        string encodedUsernamePassword = headers.ToString().Substring("Basic ".Length).Trim();
+        //        //Decoding Base64
+        //        Encoding encoding = Encoding.GetEncoding("iso-8859-1");
+        //        string usernamePassword = encoding.GetString(Convert.FromBase64String(encodedUsernamePassword));
+        //        //Splitting Username:Password
+        //        int seperatorIndex = usernamePassword.IndexOf(':');
+        //        // Extracting the individual username and password
+        //        var username = usernamePassword.Substring(0, seperatorIndex);
+        //        var password = usernamePassword.Substring(seperatorIndex + 1);
+        //        //Validating the credentials
+        //        return new OkObjectResult(new { usernamePassword, password });
+        //    }
+        //}
 
-            var _pageIndex = 1;
-            if (queryParameters.TryGetValue("PageIndex", out var pageIndex_str))
-            {
-                if (int.TryParse(pageIndex_str, out var pageIndex))
-                {
-                    _pageIndex = (int)pageIndex;
-                }
-                else
-                {
-                    result.Message = "PageIndex must be int.";
-                    return new OkObjectResult(result);
-                }
-            }
-            var _pageSize = 50;
-            if (queryParameters.TryGetValue("PageSize", out var pageSize_str))
-            {
-                if (int.TryParse(pageSize_str, out var pageSize))
-                {
-                    _pageSize = pageSize;
-                }
-                else
-                {
-                    result.Message = "PageSize must be int.";
-                    return new OkObjectResult(result);
-                }
-            }
+        //[FunctionName("UserWhiteListRefresh")]
+        //[OpenApiSecurity("basic_auth",
+        //             SecuritySchemeType.Http,
+        //             Scheme = OpenApiSecuritySchemeType.Basic)]
+        //[OpenApiOperation(operationId: "UserWhiteListRefresh", tags: new[] { "UserWhiteList" }, Summary = "Create User WhiteList information.", Description = "Delete Sql Server information.", Visibility = OpenApiVisibilityType.Important)]
+        //[OpenApiRequestBody(contentType: "application/json", bodyType: typeof(UserWhiteListDto), Description = "Feed reader request payload")]
+        //[OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(TData<SecretDto>), Summary = "result")]
+        //public async Task<IActionResult> UserWhiteListRefresh(
+        //  [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "UserWhiteList/Refresh")] HttpRequest req,
+        //  ILogger log)
+        //{
+        //    var headers = req.Headers["Authorization"];
+        //    if (Utility.ValidateToken(headers))
+        //    {
+        //        string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+        //        var item = JsonConvert.DeserializeObject<UserWhiteListDto>(requestBody, Utility.setting);
+        //        var result = _userWhiteListService.Refresh(item);
+        //        return new OkObjectResult(result);
+        //    }
+        //    else
+        //    {
+        //        return new UnauthorizedResult();
+        //    }
+        //}
 
-            result = _userWhiteListService.GetUserWhiteList(email, _pageIndex, _pageSize);
-            result = Utility.JsonReplace(result, "Password", "******");
-            return await Task.FromResult(new OkObjectResult(result));
-        }
+        //[FunctionName("UserWhiteListDelete")]
+        //[OpenApiSecurity("basic_auth",
+        //             SecuritySchemeType.Http,
+        //             Scheme = OpenApiSecuritySchemeType.Basic)]
+        //[OpenApiOperation(operationId: "UserWhiteList", tags: new[] { "UserWhiteList" }, Summary = "Delete User WhiteList information.", Description = "Delete User WhiteList information.", Visibility = OpenApiVisibilityType.Important)]
+        //[OpenApiRequestBody(contentType: "application/json", bodyType: typeof(UserWhiteListDto), Description = "Feed reader request payload")]
+        //[OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(TData), Summary = "result")]
+        //public async Task<IActionResult> UserWhiteListDelete(
+        //   [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "UserWhiteList/Delete")] HttpRequest req,
+        //   ILogger log)
+        //{
+        //    var headers = req.Headers["Authorization"];
+        //    if (Utility.ValidateToken(headers))
+        //    {
+        //        string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+        //        var item = JsonConvert.DeserializeObject<UserWhiteListDto>(requestBody, Utility.setting);
+        //        var result = _userWhiteListService.Delete(item);
+        //        return new OkObjectResult(result);
+        //    }
+        //    else
+        //    {
+        //        return new UnauthorizedResult();
+        //    }
+        //}
 
-        [FunctionName("Test")]
-        [OpenApiOperation(operationId: "UserWhiteList", tags: new[] { "Plan" }, Summary = "Get User WhiteList information.", Description = "Get User WhiteList information.", Visibility = OpenApiVisibilityType.Important)]
+
+        //[FunctionName("UserWhiteListGetListByEmail")]
+        //[OpenApiSecurity("basic_auth",
+        //             SecuritySchemeType.Http,
+        //             Scheme = OpenApiSecuritySchemeType.Basic)]
+        //[OpenApiOperation(operationId: "UserWhiteList", tags: new[] { "UserWhiteList" }, Summary = "Get User WhiteList information.", Description = "Get User WhiteList information.", Visibility = OpenApiVisibilityType.Important)]
+        //[OpenApiParameter(name: "Email", In = ParameterLocation.Query, Required = false, Type = typeof(string), Description = "The Email parameter")]
+        //[OpenApiParameter(name: "PageIndex", In = ParameterLocation.Query, Required = false, Type = typeof(int), Description = "The PageIndex parameter")]
+        //[OpenApiParameter(name: "PageSize", In = ParameterLocation.Query, Required = false, Type = typeof(int), Description = "The PageSize parameter")]
+        //[OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(TDataPage<List<UserWhiteList>>), Summary = "result")]
+        //public async Task<IActionResult> UserWhiteListGetListByEmail(
+        //    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "UserWhiteList/GetListByEmail")] HttpRequest req,
+        //    ILogger log)
+        //{
+        //    var result = new TDataPage<List<UserWhiteList>>(); 
+        //    var queryParameters = req.Query;
+        //    string email = null;
+        //    if (queryParameters.TryGetValue("Email", out var email_str))
+        //    {
+        //        email = email_str;
+        //    }
+
+        //    var _pageIndex = 1;
+        //    if (queryParameters.TryGetValue("PageIndex", out var pageIndex_str))
+        //    {
+        //        if (int.TryParse(pageIndex_str, out var pageIndex))
+        //        {
+        //            _pageIndex = (int)pageIndex;
+        //        }
+        //        else
+        //        {
+        //            result.Message = "PageIndex must be int.";
+        //            return new OkObjectResult(result);
+        //        }
+        //    }
+        //    var _pageSize = 50;
+        //    if (queryParameters.TryGetValue("PageSize", out var pageSize_str))
+        //    {
+        //        if (int.TryParse(pageSize_str, out var pageSize))
+        //        {
+        //            _pageSize = pageSize;
+        //        }
+        //        else
+        //        {
+        //            result.Message = "PageSize must be int.";
+        //            return new OkObjectResult(result);
+        //        }
+        //    }
+
+        //    result = _userWhiteListService.GetUserWhiteList(email, _pageIndex, _pageSize);
+        //    result = Utility.JsonReplace(result, "Password", "******");
+        //    return await Task.FromResult(new OkObjectResult(result));
+        //}
+
+        //[FunctionName("UserWhiteListGetToken")]
+        //[OpenApiOperation(operationId: "UserWhiteListGetToken", tags: new[] { "UserWhiteList" }, Summary = "Insert Sql Server information.", Description = "Insert Sql Server information.", Visibility = OpenApiVisibilityType.Important)]
+        //[OpenApiRequestBody(contentType: "application/json", bodyType: typeof(RequestTokenDto), Description = "Feed reader request payload")]
+        //[OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(TData<string>), Summary = "result")]
+        //public async Task<IActionResult> UserWhiteListGetToken(
+        //    [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "UserWhiteList/GetToken")] HttpRequest req,
+        //    ILogger log)
+        //{
+        //    string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+        //    var item = JsonConvert.DeserializeObject<RequestTokenDto>(requestBody, Utility.setting);
+        //    var result = _certificationService.GetToken(item);
+        //    return new OkObjectResult(result); 
+        //}
+
+        #endregion
+
+        [FunctionName("OneTrigger")]
+        [OpenApiSecurity("apikeyquery_auth",
+             SecuritySchemeType.ApiKey,
+             In = OpenApiSecurityLocationType.Header,
+             Name = "Authorization")]
+        [OpenApiOperation(operationId: "OneTrigger", tags: new[] { "Plan" }, Summary = "One Trigger.", Description = "One Trigger.", Visibility = OpenApiVisibilityType.Important)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(TDataPage<dynamic>), Summary = "result")]
         public async Task<IActionResult> Test(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Plan/Test")] HttpRequest req,
-            ILogger log)
+    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Plan/OneTrigger")] HttpRequest req,
+    ILogger log)
         {
+            var headers = req.Headers["Authorization"];
+            var result = await _certificationService.ValidateAccessToken(headers);
+            if (result.Tag == 0)
+            {
+                return new UnauthorizedResult();
+            }
+
             var expiryTime = DateTime.UtcNow.AddHours(1);
-            var plans=await _sqlPlanParserService.Execute();
+            var plans = await _sqlPlanParserService.Execute();
             _sqlPlanDispatcherService.Execute(plans, expiryTime);
             return await Task.FromResult(new OkObjectResult(plans));
         }
 
-        [FunctionName("UserWhiteListGetToken")]
-        [OpenApiOperation(operationId: "UserWhiteListGetToken", tags: new[] { "UserWhiteList" }, Summary = "Insert Sql Server information.", Description = "Insert Sql Server information.", Visibility = OpenApiVisibilityType.Important)]
-        [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(RequestTokenDto), Description = "Feed reader request payload")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(TData<string>), Summary = "result")]
-        public async Task<IActionResult> UserWhiteListGetToken(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "UserWhiteList/GetToken")] HttpRequest req,
-            ILogger log)
-        {
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            var item = JsonConvert.DeserializeObject<RequestTokenDto>(requestBody, Utility.setting);
-            var result = _certificationService.GetToken(item);
-            return new OkObjectResult(result); 
-        }
-
         [Timeout("08:00:00")]
         [FunctionName("TimerTriggerCSharp")]
-        public async Task TimerTrigger([TimerTrigger("0 55 */2 * * *")] TimerInfo myTimer, ILogger log)
+        public async Task TimerTrigger([TimerTrigger("0 */6 * * *")] TimerInfo myTimer, ILogger log)
         {
             try
             {
@@ -578,7 +597,13 @@ ILogger log)
                 };
 
                 _eLinkPlanHistoryService.WriteInfoMessage(traceLog);
-                var expiryTime = DateTime.UtcNow.AddHours(1);
+
+                if (!double.TryParse(_config["InternalTimeout"], out var  internalTimeOut))
+                {
+                    internalTimeOut = 1;
+                }
+
+                var expiryTime = DateTime.UtcNow.AddHours(internalTimeOut);
                 var plans = await _sqlPlanParserService.Execute();
                 _sqlPlanDispatcherService.Execute(plans, expiryTime);
 
@@ -607,6 +632,7 @@ ILogger log)
 
             log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
         }
+
     }
 
 }

@@ -7,7 +7,6 @@
     using System.Security.Cryptography;
     using System.Text;
     using System.Text.RegularExpressions;
-    using XAct;
 
     public class Utility
     {
@@ -96,6 +95,11 @@
             return strBuilder.ToString();
         }
 
+        /// <summary>
+        /// Custom Basic Token.
+        /// </summary>
+        /// <param name="header"></param>
+        /// <returns></returns>
         public static bool ValidateToken(string header)
         {
             //Checking the header

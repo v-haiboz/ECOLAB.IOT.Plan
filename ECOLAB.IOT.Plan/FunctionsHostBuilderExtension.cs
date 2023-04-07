@@ -145,8 +145,8 @@
           
             var config = new ConfigurationBuilder()
                 .SetBasePath(basePath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)  // common settings go here.
-                .AddJsonFile("appsettings.local.json", optional: false, reloadOnChange: true)  // secrets go here. This file is excluded from source control.
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)  // common settings go here.
+                .AddJsonFile("local.settings.json", optional: false, reloadOnChange: true)  // secrets go here. This file is excluded from source control.
                 //.AddJsonFile($"appsettings.dev.json", optional: true, reloadOnChange: true)  // environment specific settings go here
                 .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("AZURE_FUNCTIONS_ENVIRONMENT")}.json", optional: true, reloadOnChange: true)  // environment specific settings go here
                 .Build();

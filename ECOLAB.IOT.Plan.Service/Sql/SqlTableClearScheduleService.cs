@@ -34,13 +34,15 @@
         private readonly ISqlPlanParserService _sqlPlanParserService;
         private readonly IELinkServerDBMappingTableService _eLinkServerDBMappingTableService;
         private readonly IMapper _mapper;
+        private readonly IELinkServerDBMappingTableRepository _eLinkServerDBMappingTableRepository;
 
         public SqlTableClearScheduleService(IELinkSqlServerRepository eLINKSqlServerRepository,
             ISqlTableClearScheduleRepository sqlTableClearScheduleRepository,
             ISqlPlanParserService sqlPlanParserService,
             IELinkServerDBMappingTableService eLinkServerDBMappingTableService,
             IMapper mapper,
-            IPlanRepository planRepository)
+            IPlanRepository planRepository,
+            IELinkServerDBMappingTableRepository eLinkServerDBMappingTableRepository)
         {
             _eLINKSqlServerRepository = eLINKSqlServerRepository;
             _sqlTableClearScheduleRepository = sqlTableClearScheduleRepository;
@@ -48,6 +50,7 @@
             _sqlPlanParserService = sqlPlanParserService;
             _eLinkServerDBMappingTableService = eLinkServerDBMappingTableService;
             _mapper = mapper;
+            _eLinkServerDBMappingTableRepository = eLinkServerDBMappingTableRepository;
         }
 
         public async Task<TData> Insert(string json)
@@ -242,7 +245,7 @@
                     customPolicyDateTimeMetricsSchedule
                 };
 
-                var clearPlan = await _sqlPlanParserService.BuildClearPlan(eLINKSqlServer);
+                var clearPlan = await _sqlPlanParserService.BuildClearPlan(eLINKSqlServer,false);
 
                 if (clearPlan == null || clearPlan.ClearServer == null
                     || string.IsNullOrEmpty(clearPlan.ClearServer.ConnectionStr))
@@ -310,12 +313,12 @@
                     sb.AppendLine($"TableName:{sqlPlan.TableName}(Such as Sql:{sqlPlan.Sql})");
                 }
 
-                if (!InsertServerDBMappingTables(clearPlan))
-                {
-                    result.Message = $"ServerDBMappingTables insert failed.";
-                    return result;
-                }
-                
+                //if (!InsertServerDBMappingTables(clearPlan))
+                //{
+                //    result.Message = $"ServerDBMappingTables insert failed.";
+                //    return result;
+                //}
+
                 bl = _sqlTableClearScheduleRepository.Insert(customPolicyDateTimeMetricsSchedule);
 
                 result.Tag = bl ? 1 : 0;
@@ -348,20 +351,59 @@
             }
 
             var list = new List<ELinkServerDBMappingTable>();
-            foreach (var item in clearPlan.ClearTables)
+            foreach (var table in clearPlan.ClearTables)
             {
-                list.Add(new ELinkServerDBMappingTable()
+                if (table.ClearScheduleType == ClearScheduleType.DynamicDateTimeMetrics
+                    || table.ClearScheduleType == ClearScheduleType.PartialMatchDateTimeMetrics
+                    || table.ClearScheduleType == ClearScheduleType.CustomDateTimeMetrics)
                 {
-                    ServerName = clearPlan.ClearServer.ServerName,
-                    DBName = clearPlan.ClearServer.DBName,
-                    TableName = item.TableName,
-                    ColumnName = item.WhereMetrics.ColumnName,
-                    Status=0,
-                    CreatedAt = DateTime.UtcNow
-                });
+                    list.Add(new ELinkServerDBMappingTable()
+                    {
+                        ServerName = clearPlan.ClearServer.ServerName,
+                        DBName = clearPlan.ClearServer.DBName,
+                        TableName = table.TableName,
+                        ColumnName = table.WhereMetrics.ColumnName,
+                        Status = 0,
+                        CreatedAt = DateTime.UtcNow
+                    });
+                };
             }
 
-            return _eLinkServerDBMappingTableService.BulkInsertSql(list).Tag==1?true:false;
+            return _eLinkServerDBMappingTableRepository.BulkInsertSql(list);
+        }
+
+        private bool UpdateServerDBMappingTables(ClearPlan clearPlan)
+        {
+            if (clearPlan == null || clearPlan.ClearTables == null || clearPlan.ClearServer == null)
+            {
+                return false;
+            }
+
+            var list = new List<ELinkServerDBMappingTable>();
+            foreach (var table in clearPlan.ClearTables)
+            {
+                if (table.ClearScheduleType == ClearScheduleType.DynamicDateTimeMetrics
+                    || table.ClearScheduleType == ClearScheduleType.PartialMatchDateTimeMetrics
+                    || table.ClearScheduleType == ClearScheduleType.CustomDateTimeMetrics)
+                {
+                    var item = _eLinkServerDBMappingTableRepository.GetELinkServerDBMappingTable(clearPlan.ClearServer.ServerName, clearPlan.ClearServer.DBName, table.TableName);
+                    if (item != null && item.ColumnName != table.WhereMetrics.ColumnName 
+                        && !_planRepository.IsExistColumn(table.TableName, item.ColumnName, clearPlan.ClearServer.ConnectionStr))
+                    {
+                        list.Add(new ELinkServerDBMappingTable()
+                        {
+                            ServerName = clearPlan.ClearServer.ServerName,
+                            DBName = clearPlan.ClearServer.DBName,
+                            TableName = table.TableName,
+                            ColumnName = table.WhereMetrics.ColumnName,
+                            Status = 0,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                    }
+                };
+            }
+
+            return _eLinkServerDBMappingTableRepository.BulkUpdateSql(list);
         }
 
         private async Task<TData> Update<M>(SqlTableClearScheduleDto<M> sqlTableClearScheduleDto)
@@ -401,7 +443,7 @@
                   customPolicyDateTimeMetricsSchedule
                 };
 
-                var clearPlan = await _sqlPlanParserService.BuildClearPlan(eLINKSqlServer);
+                var clearPlan = await _sqlPlanParserService.BuildClearPlan(eLINKSqlServer,false);
 
                 if (clearPlan == null || clearPlan.ClearServer == null
                     || string.IsNullOrEmpty(clearPlan.ClearServer.ConnectionStr))
@@ -462,6 +504,12 @@
 
                     sb.AppendLine($"TableName:{sqlPlan.TableName}(Such as Sql:{sqlPlan.Sql})");
                 }
+
+                //if (!UpdateServerDBMappingTables(clearPlan))
+                //{
+                //    result.Message = $"ServerDBMappingTables update failed.";
+                //    return result;
+                //}
 
                 bl = _sqlTableClearScheduleRepository.Update(customPolicyDateTimeMetricsSchedule);
                 result.Tag = bl ? 1 : 0;

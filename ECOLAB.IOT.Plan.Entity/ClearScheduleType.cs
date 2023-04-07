@@ -6,7 +6,7 @@
     {
         CustomDateTimeMetrics = 1,
         CustomIntMetrics = 2,
-        PartialMatchDateTimMetrics= 3,
+        PartialMatchDateTimeMetrics= 3,
         PartialMatchIntMetrics = 4,
         DynamicDateTimeMetrics = 5,
         DynamicIntMetrics = 6,
